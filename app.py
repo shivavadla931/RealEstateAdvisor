@@ -370,50 +370,46 @@ st.sidebar.markdown("<div class='sidebar-title'>🏡 Real Estate Advisor</div>",
 page = st.sidebar.radio("Navigate", ("Home", "Predict Price", "Visual Analytics"))
 
 # ---------------------------------------------------------------
-# SIDEBAR — VISUAL ANALYTICS (THUMBNAILS + EXPANDABLE)
+# VISUAL ANALYTICS (SIDEBAR THUMBNAILS)
 # ---------------------------------------------------------------
 
-st.sidebar.markdown("<div class='sidebar-title'>📊 Visual Analytics</div>", unsafe_allow_html=True)
+if page == "Visual Analytics":
 
-def fig_to_base64(fig):
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", bbox_inches='tight')
-    buf.seek(0)
-    return base64.b64encode(buf.read()).decode("utf-8")
+    st.markdown("<h2 class='section-title'>📊 Visual Analytics</h2>", unsafe_allow_html=True)
 
-expanded_chart = st.sidebar.empty()  # placeholder for expanded view
+    if df_raw is None:
+        st.warning("Dataset not available.")
+    else:
 
-# Generate all thumbnails
-for chart_title, chart_func in CHART_MAPPING.items():
-    try:
-        fig = chart_func(df_raw)
-        if fig is None:
-            continue
+        st.sidebar.markdown("### 📊 Visual Analytics")
 
-        # Convert to small thumbnail image
-        thumbnail_base64 = fig_to_base64(fig)
-        plt.close(fig)
+        # Sidebar list of thumbnails
+        for chart_title, chart_func in CHART_MAPPING.items():
 
-        # Sidebar thumbnail card
-        with st.sidebar:
-            st.markdown(f"**{chart_title}**")
+            with st.sidebar.expander(f"▶ {chart_title}", expanded=False):
 
-            if st.button(f"View: {chart_title}", key=f"btn_{chart_title}"):
-                # When user clicks → show expanded chart in sidebar bottom
-                big_fig = chart_func(df_raw)
-                expanded_chart.pyplot(big_fig)
-                plt.close(big_fig)
+                # Generate thumbnail
+                try:
+                    fig = chart_func(df_raw)
+                    buf = io.BytesIO()
+                    fig.savefig(buf, format="png", dpi=40, bbox_inches="tight")
+                    buf.seek(0)
 
-            st.sidebar.image(
-                f"data:image/png;base64,{thumbnail_base64}",
-                use_column_width=True,
-                caption="Preview"
-            )
+                    st.image(buf, use_column_width=True)
+                    plt.close(fig)
 
-            st.sidebar.markdown("---")
+                    # Expand full chart on click
+                    if st.button(f"Expand {chart_title}", key=f"full_{chart_title}"):
 
-    except Exception as e:
-        st.sidebar.error(f"Error loading {chart_title}: {e}")
+                        # Show full chart in main area
+                        fig_full = chart_func(df_raw)
+                        st.pyplot(fig_full)
+                        plt.close(fig_full)
+
+                except Exception as e:
+                    st.sidebar.write(f"Thumbnail unavailable: {e}")
+
+    st.stop()
 
 # ---------------------------------------------------------------
 # HOME PAGE
@@ -515,5 +511,6 @@ elif page == "Visual Analytics":
                             plt.close(thumb)
                     except Exception:
                         st.write("Preview unavailable")
+
 
 
