@@ -14,32 +14,43 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------
-# LOAD ML MODELS
+# CACHED MODEL LOADING (Prevents memory crashes)
 # ---------------------------------------------------------------
-clf, regr = None, None
+@st.cache_resource
+def load_models():
+    classification_path = "./models/classification_model"
+    regression_path = "./models/regression_model"
 
-classification_path = "./models/classification_model"
-regression_path = "./models/regression_model"
+    clf, regr = None, None
 
-try:
-    if os.path.exists(classification_path) and os.path.exists(regression_path):
-        clf = mlflow.sklearn.load_model(classification_path)
-        regr = mlflow.sklearn.load_model(regression_path)
-    else:
-        st.warning("⚠️ ML models not found.")
-except Exception as e:
-    st.error(f"Model load error: {e}")
+    try:
+        if os.path.exists(classification_path) and os.path.exists(regression_path):
+            clf = mlflow.sklearn.load_model(classification_path)
+            regr = mlflow.sklearn.load_model(regression_path)
+        else:
+            st.warning("⚠️ ML models not found.")
+    except Exception as e:
+        st.error(f"Model load error: {e}")
+
+    return clf, regr
+
+
+clf, regr = load_models()
 
 # ---------------------------------------------------------------
-# LOAD DATASET
+# CACHED DATA LOADING (Stops repeated huge downloads)
 # ---------------------------------------------------------------
-CSV_URL = "https://drive.google.com/uc?export=download&id=1ocXmSTnawuKzJNHZmEmuWkMFsVt9nLfh"
+@st.cache_data
+def load_dataset():
+    CSV_URL = "https://drive.google.com/uc?export=download&id=1ocXmSTnawuKzJNHZmEmuWkMFsVt9nLfh"
+    try:
+        return pd.read_csv(CSV_URL)
+    except Exception as e:
+        st.error(f"❌ Could not load dataset. {e}")
+        return None
 
-df_raw = None
-try:
-    df_raw = pd.read_csv(CSV_URL)
-except Exception as e:
-    st.error(f"❌ Could not load dataset. {e}")
+
+df_raw = load_dataset()
 
 # ---------------------------------------------------------------
 # BUILD FEATURES FOR MODEL
@@ -48,15 +59,18 @@ def build_feature_row(raw_row: pd.Series) -> pd.DataFrame:
     FEATURE_COLUMNS = list(clf.feature_names_in_) if clf else list(raw_row.index)
     X = pd.DataFrame(np.zeros((1, len(FEATURE_COLUMNS))), columns=FEATURE_COLUMNS)
 
+    # Numeric columns
     for col in raw_row.index:
         if col in X.columns and isinstance(raw_row[col], (int, float, np.integer, np.floating)):
             X.at[0, col] = raw_row[col]
 
+    # Public transport mapping
     if "Public_Transport_Accessibility" in raw_row.index and "Public_Transport_Accessibility" in X.columns:
         mapping = {"Low": 1, "Medium": 2, "High": 3}
         X.at[0, "Public_Transport_Accessibility"] = mapping.get(str(raw_row["Public_Transport_Accessibility"]), 0)
 
     return X
+
 
 # ---------------------------------------------------------------
 # UI — HOME SECTION
