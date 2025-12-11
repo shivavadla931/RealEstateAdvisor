@@ -1,9 +1,10 @@
-streamlit
+streamlit==1.32.0
+mlflow
 pandas
 numpy
-scikit-learn
-mlflow
 matplotlib
 seaborn
-joblib
+scikit-learn
 xgboost
+python-dotenv
+requests
