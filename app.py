@@ -369,13 +369,51 @@ CHART_MAPPING = {
 st.sidebar.markdown("<div class='sidebar-title'>🏡 Real Estate Advisor</div>", unsafe_allow_html=True)
 page = st.sidebar.radio("Navigate", ("Home", "Predict Price", "Visual Analytics"))
 
-# Visual Analytics dropdown in sidebar
-selected_chart = None
-if page == "Visual Analytics":
-    st.sidebar.markdown("### Visual Analytics")
-    chart_choice = st.sidebar.selectbox("Select chart", ["Select a chart"] + list(CHART_MAPPING.keys()))
-    if chart_choice != "Select a chart":
-        selected_chart = chart_choice
+# ---------------------------------------------------------------
+# SIDEBAR — VISUAL ANALYTICS (THUMBNAILS + EXPANDABLE)
+# ---------------------------------------------------------------
+
+st.sidebar.markdown("<div class='sidebar-title'>📊 Visual Analytics</div>", unsafe_allow_html=True)
+
+def fig_to_base64(fig):
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches='tight')
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode("utf-8")
+
+expanded_chart = st.sidebar.empty()  # placeholder for expanded view
+
+# Generate all thumbnails
+for chart_title, chart_func in CHART_MAPPING.items():
+    try:
+        fig = chart_func(df_raw)
+        if fig is None:
+            continue
+
+        # Convert to small thumbnail image
+        thumbnail_base64 = fig_to_base64(fig)
+        plt.close(fig)
+
+        # Sidebar thumbnail card
+        with st.sidebar:
+            st.markdown(f"**{chart_title}**")
+
+            if st.button(f"View: {chart_title}", key=f"btn_{chart_title}"):
+                # When user clicks → show expanded chart in sidebar bottom
+                big_fig = chart_func(df_raw)
+                expanded_chart.pyplot(big_fig)
+                plt.close(big_fig)
+
+            st.sidebar.image(
+                f"data:image/png;base64,{thumbnail_base64}",
+                use_column_width=True,
+                caption="Preview"
+            )
+
+            st.sidebar.markdown("---")
+
+    except Exception as e:
+        st.sidebar.error(f"Error loading {chart_title}: {e}")
 
 # ---------------------------------------------------------------
 # HOME PAGE
@@ -477,4 +515,5 @@ elif page == "Visual Analytics":
                             plt.close(thumb)
                     except Exception:
                         st.write("Preview unavailable")
+
 
