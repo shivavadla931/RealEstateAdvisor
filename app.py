@@ -381,7 +381,7 @@ if page == "Visual Analytics":
 # HOME PAGE
 # ---------------------------------------------------------------
 if page == "Home":
-    st.markdown("<h1 class='section-title'> 🏚️ Real Estate Investment Advisor</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 class='section-title'> 🏡 Real Estate Investment Advisor</h1>", unsafe_allow_html=True)
     st.markdown("<div class='pcard'>", unsafe_allow_html=True)
     st.markdown("### Welcome 👋")
     st.markdown("Use this dashboard to analyze your housing dataset and run investment predictions.")
@@ -477,3 +477,4 @@ elif page == "Visual Analytics":
                             plt.close(thumb)
                     except Exception:
                         st.write("Preview unavailable")
+
