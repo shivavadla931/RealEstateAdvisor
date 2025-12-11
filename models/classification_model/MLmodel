@@ -1,0 +1,22 @@
+artifact_path: file:c:/Users/VADLAS/Downloads/RealEstateAdvisor/mlruns/3/models/m-dfbe3fb1a6264ebc8cf50b8927bee287/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.14.2
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.2
+mlflow_version: 3.7.0
+model_id: m-dfbe3fb1a6264ebc8cf50b8927bee287
+model_size_bytes: 19311
+model_uuid: m-dfbe3fb1a6264ebc8cf50b8927bee287
+prompts: null
+run_id: 59502254c8d643f4be7dd4e621368f6a
+utc_time_created: '2025-12-10 12:09:55.048733'
