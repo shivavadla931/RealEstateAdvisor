@@ -42,7 +42,7 @@ clf, regr = load_models()
 # ---------------------------------------------------------------
 @st.cache_data
 def load_dataset():
-    CSV_URL = "https://drive.google.com/uc?export=download&id=1ocXmSTnawuKzJNHZmEmuWkMFsVt9nLfh"
+    CSV_URL = "https://drive.google.com/uc?id=1BxraY54y-iD8fDmCHFHGdMjEyPVR_Ios"
     try:
         return pd.read_csv(CSV_URL)
     except Exception as e:
@@ -135,3 +135,4 @@ else:
 
         st.subheader("💰 Estimated Price After 5 Years")
         st.write(f"### ₹ {reg_pred:.2f} Lakhs")
+
